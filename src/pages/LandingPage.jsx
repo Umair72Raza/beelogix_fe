@@ -3,23 +3,34 @@ import { Container, Typography, Button, Grid, Card, CardContent } from "@mui/mat
 import Navbar from "../components/Navbar";
 import AuthModal from "../components/AuthModal";
 import { useAuth } from "../context/AuthContext";
+import ApplyJobModal from "../components/ApplyJobModal";
+import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
-  const { setAuthModalOpen, setAuthType, authModalOpen } = useAuth();
+  const { setAuthModalOpen, setAuthType, authModalOpen, user } = useAuth();
   const [jobs, setJobs] = useState([]);
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const navigate = useNavigate();
+  const endpoint = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/jobs");
+        const response = await fetch(`${endpoint}/api/jobs`);
         const data = await response.json();
-        setJobs(data);
+        setJobs(data.jobs);
       } catch (error) {
         console.error("Error fetching jobs:", error);
       }
     };
-    fetchJobs();
+    fetchJobs().then(()=> console.log(user));
   }, []);
+
+  const handleApplyClick = (job) => {
+    setSelectedJob(job);
+    setApplyModalOpen(true);
+  };
 
   return (
     <>
@@ -57,8 +68,32 @@ const LandingPage = () => {
                       {job.company}
                     </Typography>
                     <Typography variant="body2">
-                      Required Skills: {job.skills.join(", ")}
+                      Required Skills: {job.requiredSkills.map((skill) => (
+                        <Typography variant="body2">{skill}</Typography>
+                      ))}
                     </Typography>
+                    {user && user.email === job.createdBy.email ? (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={() => navigate(`/applications/${job._id}`)}
+                        style={{ marginTop: "10px" }}
+                      >
+                        Check Applications
+                      </Button>
+                    ) : (
+                      // If not the job creator, show "Apply for Job" button
+                      user && (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => setAuthModalOpen(true)} // Open Apply Modal here
+                          style={{ marginTop: "10px" }}
+                        >
+                          Apply for Job
+                        </Button>
+                      )
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -70,6 +105,8 @@ const LandingPage = () => {
           )}
         </Grid>
       </Container>
+      <ApplyJobModal open={applyModalOpen} onClose={() => setApplyModalOpen(false)} jobId={selectedJob?._id} />
+
       <AuthModal /> {/* Modal is included in the component tree */}
     </>
   );
