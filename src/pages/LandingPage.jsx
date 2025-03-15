@@ -5,30 +5,30 @@ import AuthModal from "../components/AuthModal";
 import { useAuth } from "../context/AuthContext";
 import ApplyJobModal from "../components/ApplyJobModal";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchJobs } from "../redux/jobsSlice";
 
 const LandingPage = () => {
   const { setAuthModalOpen, setAuthType, authModalOpen, user } = useAuth();
-  const [jobs, setJobs] = useState([]);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const navigate = useNavigate();
-  const endpoint = process.env.REACT_APP_API_URL;
+
+  // Redux hooks
+  const dispatch = useDispatch();
+  const { jobs, status, error } = useSelector((state) => state.jobs);
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch(`${endpoint}/api/jobs`);
-        const data = await response.json();
-        setJobs(data.jobs);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-      }
-    };
-    fetchJobs().then(()=> console.log(user));
-  }, []);
+    if (status === "idle") {
+      dispatch(fetchJobs());
+    }
+  }, [status, dispatch]);
+
 
   const handleApplyClick = (job) => {
     setSelectedJob(job);
+    console.log(job);
+    
     setApplyModalOpen(true);
   };
 
@@ -87,7 +87,7 @@ const LandingPage = () => {
                         <Button
                           variant="contained"
                           color="primary"
-                          onClick={() => setAuthModalOpen(true)} // Open Apply Modal here
+                          onClick={() => handleApplyClick(job)} // Open Apply Modal here
                           style={{ marginTop: "10px" }}
                         >
                           Apply for Job

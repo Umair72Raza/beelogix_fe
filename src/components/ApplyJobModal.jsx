@@ -1,56 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogTitle, DialogContent, TextField, Button } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { clearApplicationStatus, submitApplication } from "../redux/applicationSlice";
 
 const ApplyJobModal = ({ open, onClose, jobId, onSubmit }) => {
-  const [formData, setFormData] = useState({ name: "", email: "", resume: null });
-  const [loading, setLoading] = useState(false);
-  const endpoint = process.env.REACT_APP_API_URL;
-
-
-  const handleFileChange = (e) => {
-    setFormData({ ...formData, resume: e.target.files[0] });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.resume) {
-      alert("All fields including resume are required");
-      return;
-    }
+    useEffect(()=>{
+        console.log(jobId)
+    },[])
+    const [formData, setFormData] = useState({ name: "", email: "", resume: null });
+    const dispatch = useDispatch();
+    const { loading, success, error } = useSelector((state) => state.applications);
   
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token"); // Retrieve token from local storage
-  
-      const formDataToSend = new FormData();
-      formDataToSend.append("jobId", jobId);
-      formDataToSend.append("applicantName", formData.name);
-      formDataToSend.append("applicantEmail", formData.email);
-      formDataToSend.append("resume", formData.resume);
-
-
-      const response = await fetch(`${endpoint}/api/applications`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`, // Attach token here
-        },
-        body: formDataToSend,
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        alert("Application submitted successfully");
-        onClose();
-      } else {
-        alert(data.message || "Failed to submit application");
+    useEffect(() => {
+      if (success || error) {
+        setTimeout(() => dispatch(clearApplicationStatus()), 3000);
       }
-    } catch (error) {
-      alert("Error submitting application");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, [success, error, dispatch]);
+  
+    const handleFileChange = (e) => {
+      setFormData({ ...formData, resume: e.target.files[0] });
+    };
+  
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (!formData.name || !formData.email || !formData.resume) {
+        alert("All fields including resume are required");
+        return;
+      }
+      dispatch(submitApplication({ jobId, name: formData.name, email: formData.email, resume: formData.resume }));
+    };
   
 
   return (

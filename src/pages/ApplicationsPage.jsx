@@ -6,7 +6,7 @@ const ApplicationsPage = () => {
   const { jobId } = useParams(); // Get jobId from URL
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const endpoint = process.env.REACT_APP_API_URL;
+  const endpoint = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     const fetchApplications = async () => {

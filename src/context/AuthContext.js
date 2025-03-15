@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authType, setAuthType] = useState("login");
-  const endpoint = process.env.REACT_APP_API_URL;
+  const endpoint = process.env.REACT_APP_API_BASE_URL;
 
   const login = async (email, password) => {
     try {

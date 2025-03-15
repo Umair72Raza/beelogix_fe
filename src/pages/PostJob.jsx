@@ -8,7 +8,7 @@ const PostJob = () => {
   const [jobData, setJobData] = useState({ title: "", company: "", description: "", skills: [""] });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const endpoint = process.env.REACT_APP_API_URL;
+  const endpoint = process.env.REACT_APP_API_BASE_URL;
 
   const handleSkillChange = (index, value) => {
     const updatedSkills = [...jobData.skills];
